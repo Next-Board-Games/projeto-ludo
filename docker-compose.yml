@@ -23,3 +23,13 @@ services:
       - ./data/postgres/data:/var/lib/postgresql/data/
     env_file:
       - ./dotenv_files/.env
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "8080:80"  # Maps container port 80 to host port 8080
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "mext_board_games@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "teste_senha"
