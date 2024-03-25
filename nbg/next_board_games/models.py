@@ -38,3 +38,14 @@ class Jogo(models.Model):
     temas = models.ManyToManyField(Tema)
     artistas = models.ManyToManyField(Profissional, related_name='artistas')
     designers = models.ManyToManyField(Profissional, related_name='designers')
+    cluster = models.IntegerField(null=True, blank=True)  # Adiciona o campo de cluster
+
+class TrainedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    model_data = models.BinaryField()
+
+    def __str__(self):
+        return f'Model saved on {self.created_at}'
+
+class ModelStorage(models.Model):
+    model_data = models.BinaryField()

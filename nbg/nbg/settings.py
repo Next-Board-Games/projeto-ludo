@@ -78,14 +78,13 @@ WSGI_APPLICATION = 'nbg.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'nome_do_banco',
-        'USER': 'usuario',
-        'PASSWORD': 'senha',
-        'HOST': 'localhost',
+        'NAME': 'nome_do_banco_de_dados',
+        'USER': 'usuario_do_banco_de_dados',
+        'PASSWORD': 'senha_do_banco_de_dados',
+        'HOST': 'db',  # Nome do serviço do PostgreSQL no docker-compose.yml
         'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

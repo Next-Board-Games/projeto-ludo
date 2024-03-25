@@ -7,12 +7,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sqlalchemy import create_engine
 from django.conf import settings
+from next_board_games.models import Jogo
 
 class Command(BaseCommand):
-    help = 'Prepara os dados e treina o modelo de clustering'
+    help = 'Prepara os dados, treina o modelo de clustering e atualiza cada jogo com seu cluster'
 
     def handle(self, *args, **kwargs):
-        # Acesso à configuração do banco de dados a partir de settings.py
         db_settings = settings.DATABASES['default']
         user = db_settings['USER']
         password = db_settings['PASSWORD']
@@ -50,3 +50,7 @@ class Command(BaseCommand):
 
         popularity_cols = ['qt_quer', 'qt_favorito', 'qt_jogou', 'qt_tem', 'qt_teve']
         df['popularity_score'] = df[popularity_cols].sum(axis=1)
+
+        # Assumindo df['id_jogo'] contém o ID do jogo correspondente
+        for index, row in df.iterrows():
+            Jogo.objects.filter(id_jogo=row['id_jogo']).update(cluster=row['cluster'])
