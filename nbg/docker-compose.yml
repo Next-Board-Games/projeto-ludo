@@ -6,9 +6,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: nome_do_banco_de_dados
-      POSTGRES_USER: usuario_do_banco_de_dados
-      POSTGRES_PASSWORD: senha_do_banco_de_dados
+      POSTGRES_DB: localhost
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: '@NBGames2000'
     ports:
       - "5432:5432"
 

@@ -78,9 +78,9 @@ WSGI_APPLICATION = 'nbg.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'nome_do_banco_de_dados',
-        'USER': 'usuario_do_banco_de_dados',
-        'PASSWORD': 'senha_do_banco_de_dados',
+        'NAME': 'localhost',
+        'USER': 'postgres',
+        'PASSWORD': '@NBGames2000',
         'HOST': 'db',  # Nome do serviço do PostgreSQL no docker-compose.yml
         'PORT': '5432',
     }

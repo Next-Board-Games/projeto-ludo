@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from . import views
+from next_board_games import views
 
 urlpatterns = [
     path('recomendar-jogos/', views.recomendar_jogos_view, name='recomendar-jogos'),
