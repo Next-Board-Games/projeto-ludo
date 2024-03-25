@@ -11,6 +11,7 @@ services:
       - ./nbg:/nbg
       - ./data/web/static:/data/web/static/
       - ./data/web/media:/data/web/media/
+      - ./src:/src  # Adicionando o diretório src como um volume
     env_file:
       - ./dotenv_files/.env
     depends_on:

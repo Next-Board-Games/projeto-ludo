@@ -1,65 +1,74 @@
 from django.core.management.base import BaseCommand
-import pandas as pd
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.cluster import KMeans
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sqlalchemy import create_engine
-from django.conf import settings
-import joblib
-from io import BytesIO
-from next_board_games.models import ModelStorage
+import json
+from django.db import transaction
+from next_board_games.models import Jogo, Mecanica, Categoria, Tema, Profissional
 
 class Command(BaseCommand):
-    help = 'Prepara os dados, treina o modelo de clustering e salva o modelo no banco de dados'
+    help = 'Importa jogos a partir de um arquivo JSON para o banco de dados'
 
-    def handle(self, *args, **kwargs):
-        # Acesso à configuração do banco de dados a partir de settings.py
-        db_settings = settings.DATABASES['default']
-        user = db_settings['USER']
-        password = db_settings['PASSWORD']
-        database = db_settings['NAME']
-        host = db_settings['HOST']
-        port = db_settings['PORT']
-        engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+    def add_arguments(self, parser):
+        parser.add_argument('arquivo_json', type=str, help='O caminho do arquivo JSON contendo os jogos')
 
-        # Query SQL para selecionar os dados
-        sql_query = "SELECT * FROM jogos"
+    @transaction.atomic
+    def handle(self, *args, **options):
+        arquivo_json = options['arquivo_json']
         
-        # Carregar os dados diretamente do PostgreSQL
-        df = pd.read_sql_query(sql_query, engine)
+        with open(arquivo_json, 'r', encoding='utf-8') as file:
+            jogos_data = json.load(file)
+            
+            for jogo_data in jogos_data:
+                jogo = Jogo.objects.create(
+                    id_jogo=jogo_data['id_jogo'],
+                    nm_jogo=jogo_data['nm_jogo'],
+                    thumb=jogo_data.get('thumb'),
+                    tp_jogo=jogo_data.get('tp_jogo'),
+                    link=jogo_data.get('link'),
+                    ano_publicacao=jogo_data.get('ano_publicacao'),
+                    ano_nacional=jogo_data.get('ano_nacional'),
+                    qt_jogadores_min=jogo_data.get('qt_jogadores_min'),
+                    qt_jogadores_max=jogo_data.get('qt_jogadores_max'),
+                    vl_tempo_jogo=jogo_data.get('vl_tempo_jogo'),
+                    idade_minima=jogo_data.get('idade_minima'),
+                    qt_tem=jogo_data.get('qt_tem'),
+                    qt_teve=jogo_data.get('qt_teve'),
+                    qt_favorito=jogo_data.get('qt_favorito'),
+                    qt_quer=jogo_data.get('qt_quer'),
+                    qt_jogou=jogo_data.get('qt_jogou')
+                )
 
-        # Preparação dos dados e treinamento do modelo
-        num_imputer = SimpleImputer(strategy='mean')
-        cat_imputer = SimpleImputer(strategy='constant', fill_value='desconhecido')
+                for mecanica_data in jogo_data['mecanicas']:
+                    mecanica, _ = Mecanica.objects.get_or_create(
+                        id_mecanica=mecanica_data['id_mecanica'],
+                        defaults={'nm_mecanica': mecanica_data['nm_mecanica']}
+                    )
+                    jogo.mecanicas.add(mecanica)
 
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ('num', Pipeline(steps=[('imputer', num_imputer), ('scaler', StandardScaler())]), ['qt_jogadores_min', 'qt_jogadores_max', 'vl_tempo_jogo', 'idade_minima']),
-                ('cat', Pipeline(steps=[('imputer', cat_imputer), ('encoder', OneHotEncoder(handle_unknown='ignore'))]), ['mecanicas', 'categorias', 'temas'])
-            ]
-        )
+                for categoria_data in jogo_data['categorias']:
+                    categoria, _ = Categoria.objects.get_or_create(
+                        id_categoria=categoria_data['id_categoria'],
+                        defaults={'nm_categoria': categoria_data['nm_categoria']}
+                    )
+                    jogo.categorias.add(categoria)
 
-        kmeans = KMeans(n_clusters=5, random_state=42, n_init=10)
-        pipeline = Pipeline(steps=[('preprocessor', preprocessor), ('cluster', kmeans)])
+                for tema_data in jogo_data['temas']:
+                    tema, _ = Tema.objects.get_or_create(
+                        id_tema=tema_data['id_tema'],
+                        defaults={'nm_tema': tema_data['nm_tema']}
+                    )
+                    jogo.temas.add(tema)
 
-        cols_for_clustering = ['qt_jogadores_min', 'qt_jogadores_max', 'vl_tempo_jogo', 'idade_minima', 'mecanicas', 'categorias', 'temas']
-        df_clustering = df[cols_for_clustering]
-        pipeline.fit(df_clustering)
+                for artista_data in jogo_data['artistas']:
+                    artista, _ = Profissional.objects.get_or_create(
+                        id_profissional=artista_data['id_profissional'],
+                        defaults={'nm_profissional': artista_data['nm_profissional']}
+                    )
+                    jogo.artistas.add(artista)
 
-        df['cluster'] = pipeline.predict(df_clustering)
+                for designer_data in jogo_data['designers']:
+                    designer, _ = Profissional.objects.get_or_create(
+                        id_profissional=designer_data['id_profissional'],
+                        defaults={'nm_profissional': designer_data['nm_profissional']}
+                    )
+                    jogo.designers.add(designer)
 
-        popularity_cols = ['qt_quer', 'qt_favorito', 'qt_jogou', 'qt_tem', 'qt_teve']
-        df['popularity_score'] = df[popularity_cols].sum(axis=1)
-
-        # Serialização e armazenamento do modelo
-        buffer = BytesIO()
-        joblib.dump(pipeline, buffer)
-        buffer.seek(0)
-
-        # Usando o Django ORM para inserção
-        model_storage_instance = ModelStorage(model_data=buffer.getvalue())
-        model_storage_instance.save()
-
-        print("Modelo treinado salvo no banco de dados.")
+                self.stdout.write(self.style.SUCCESS(f'Jogo "{jogo.nm_jogo}" importado com sucesso.'))

@@ -1,56 +1,48 @@
 from django.core.management.base import BaseCommand
+from django.db import connection
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.cluster import KMeans
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sqlalchemy import create_engine
-from django.conf import settings
 from next_board_games.models import Jogo
 
 class Command(BaseCommand):
     help = 'Prepara os dados, treina o modelo de clustering e atualiza cada jogo com seu cluster'
 
-    def handle(self, *args, **kwargs):
-        db_settings = settings.DATABASES['default']
-        user = db_settings['USER']
-        password = db_settings['PASSWORD']
-        database = db_settings['NAME']
-        host = db_settings['HOST']
-        port = db_settings['PORT']
-        engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database}')
-
-        # Query SQL para selecionar os dados
-        sql_query = "SELECT * FROM jogos"
+    def handle(self, *args, **options):
+        sql_query = "SELECT * FROM next_board_games_jogo"
         
-        # Carregar os dados diretamente do PostgreSQL
-        df = pd.read_sql_query(sql_query, engine)
+        # Usar a conexão do Django para executar a consulta SQL
+        with connection.cursor() as cursor:
+            cursor.execute(sql_query)
+            rows = cursor.fetchall()
+            columns = [col[0] for col in cursor.description]
+            df = pd.DataFrame(rows, columns=columns)
 
-        # Pré-processamento, imputadores e preprocessor permanecem inalterados, como no código original
-
+        # Preparação dos dados e treinamento do modelo
+        # Obs: A coluna de categorias, mecânicas e temas precisarão ser pré-processadas separadamente,
+        # já que são relacionamentos ManyToMany e não serão diretamente acessíveis em um DataFrame.
+        num_columns = ['qt_jogadores_min', 'qt_jogadores_max', 'vl_tempo_jogo', 'idade_minima']
         num_imputer = SimpleImputer(strategy='mean')
-        cat_imputer = SimpleImputer(strategy='constant', fill_value='desconhecido')
-
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ('num', Pipeline(steps=[('imputer', num_imputer), ('scaler', StandardScaler())]), ['qt_jogadores_min', 'qt_jogadores_max', 'vl_tempo_jogo', 'idade_minima']),
-                ('cat', Pipeline(steps=[('imputer', cat_imputer), ('encoder', OneHotEncoder(handle_unknown='ignore'))]), ['mecanicas', 'categorias', 'temas'])
-            ]
-        )
-
+        
+        preprocessor = ColumnTransformer(transformers=[
+            ('num', Pipeline(steps=[('imputer', num_imputer), ('scaler', StandardScaler())]), num_columns)
+        ])
+        
         kmeans = KMeans(n_clusters=5, random_state=42, n_init=10)
         pipeline = Pipeline(steps=[('preprocessor', preprocessor), ('cluster', kmeans)])
-
-        cols_for_clustering = ['qt_jogadores_min', 'qt_jogadores_max', 'vl_tempo_jogo', 'idade_minima', 'mecanicas', 'categorias', 'temas']
-        df_clustering = df[cols_for_clustering]
+        
+        # Filtrar o DataFrame para incluir somente as colunas numéricas especificadas
+        df_clustering = df[num_columns]
         pipeline.fit(df_clustering)
-
+        
+        # Predizer os clusters para os dados
         df['cluster'] = pipeline.predict(df_clustering)
-
-        popularity_cols = ['qt_quer', 'qt_favorito', 'qt_jogou', 'qt_tem', 'qt_teve']
-        df['popularity_score'] = df[popularity_cols].sum(axis=1)
-
-        # Assumindo df['id_jogo'] contém o ID do jogo correspondente
+        
+        # Atualizar cada jogo com seu cluster
         for index, row in df.iterrows():
             Jogo.objects.filter(id_jogo=row['id_jogo']).update(cluster=row['cluster'])
+
+        self.stdout.write(self.style.SUCCESS('Dados preparados e modelo de clustering aplicado com sucesso.'))
