@@ -16,6 +16,17 @@ services:
       - ./dotenv_files/.env
     depends_on:
       - psql
+  react:
+    container_name: nbg_frontend
+    build:
+      context: ./nbg/nbg_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nbg/nbg_frontend/src:/app/src
+      - ./nbg/nbg_frontend/public:/app/public
+    stdin_open: true
+    tty: true
   psql:
     container_name: psql
     image: postgres:13-alpine

@@ -1,0 +1,10 @@
+python manage.py importar_jogos_detalhe C:\Users\arthu\OneDrive\Documentos\Projeto Ludo\projeto-ludo\src\jogos_detalhe.json
+
+docker-compose up -d
+
+docker-compose up --build --force-recreate
+
+docker exec nbg python manage.py importar_jogos_detalhe /src/jogos_detalhe.json
+
+docker exec -it nbg python manage.py prepare_data
+psql -U duser -d next_board_games

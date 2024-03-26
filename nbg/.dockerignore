@@ -1,3 +1,4 @@
+# Comentários são permitidos e começam com #
 *.pyc
 *.pyo
 *.mo
@@ -21,4 +22,4 @@ env
 logs
 stats
 Dockerfile
-__localcode/
+__localcode
