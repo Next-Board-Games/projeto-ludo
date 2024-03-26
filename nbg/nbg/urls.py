@@ -24,10 +24,12 @@ from next_board_games import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('recomendar-jogos/', views.recomendar_jogos_view, name='recomendar-jogos'),
+    # Novas rotas para buscar mecânicas, categorias e temas
+    path('get-mecanicas/', views.get_mecanicas_view, name='get-mecanicas'),
+    path('get-categorias/', views.get_categorias_view, name='get-categorias'),
+    path('get-temas/', views.get_temas_view, name='get-temas'),
+    path('get-nomes-jogos/', views.get_nomes_jogos_view, name='get-nomes-jogos'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT
-    )
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
