@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import JogosList from './components/JogosList';
+import AutocompleteInput from './components/AutocompleteInput';
+import SelectWithCheckboxes from './components/SelectWithCheckboxes';
+import './App.css';
+import './index.css';
 
 function App() {
   const [nome, setNome] = useState('');
@@ -8,108 +12,66 @@ function App() {
   const [selecionadasCategorias, setSelecionadasCategorias] = useState([]);
   const [selecionadasTemas, setSelecionadasTemas] = useState([]);
   const [jogos, setJogos] = useState([]);
-  const [mecanicas, setMecanicas] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [temas, setTemas] = useState([]);
+  const [mecanicasOptions, setMecanicasOptions] = useState([]);
+  const [categoriasOptions, setCategoriasOptions] = useState([]);
+  const [temasOptions, setTemasOptions] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const resMecanicas = await axios.get('http://localhost:8000/get-mecanicas/');
-      setMecanicas(resMecanicas.data);
-      const resCategorias = await axios.get('http://localhost:8000/get-categorias/');
-      setCategorias(resCategorias.data);
-      const resTemas = await axios.get('http://localhost:8000/get-temas/');
-      setTemas(resTemas.data);
+    // Fetch options for mechanics, categories, and themes
+    const fetchOptions = async () => {
+      const mecResponse = await axios.get('http://localhost:8000/get-mecanicas/');
+      setMecanicasOptions(mecResponse.data);
+      const catResponse = await axios.get('http://localhost:8000/get-categorias/');
+      setCategoriasOptions(catResponse.data);
+      const temResponse = await axios.get('http://localhost:8000/get-temas/');
+      setTemasOptions(temResponse.data);
     };
-    fetchData();
+    fetchOptions();
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // Constrói os parâmetros da requisição com base nas opções selecionadas
+    const params = new URLSearchParams();
+    if (nome) params.append('nome', nome);
+    selecionadasMecanicas.forEach(m => params.append('mecanicas', m));
+    selecionadasCategorias.forEach(c => params.append('categorias', c));
+    selecionadasTemas.forEach(t => params.append('temas', t));
+  
     try {
-      const response = await axios.get('http://localhost:8000/recomendar-jogos/', {
-        params: {
-          nome,
-          mecanicas: selecionadasMecanicas.join(','),
-          categorias: selecionadasCategorias.join(','),
-          temas: selecionadasTemas.join(',')
-        }
-      });
-      setJogos(response.data);
+      const response = await axios.get(`http://localhost:8000/recomendar-jogos/?${params.toString()}`);
+      setJogos(response.data); // Atualiza a lista de jogos com a resposta da requisição
     } catch (error) {
       console.error("Erro ao buscar jogos:", error);
     }
   };
-
-  const handleCheckboxChange = (filterType, value) => {
-    const updateSelection = {
-      mecanicas: setSelecionadasMecanicas,
-      categorias: setSelecionadasCategorias,
-      temas: setSelecionadasTemas
-    };
-
-    updateSelection[filterType](prevState => {
-      const isPresent = prevState.includes(value);
-      if (isPresent) {
-        return prevState.filter(item => item !== value);
+  
+  // Update state based on selection from the checkboxes
+  const handleSelectionChange = (setState, value) => {
+    setState(prev => {
+      if (prev.includes(value)) {
+        return prev.filter(item => item !== value);
       } else {
-        return [...prevState, value];
+        return [...prev, value];
       }
     });
   };
 
   return (
-    <div>
-      <h1>Buscar Jogos</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          placeholder="Nome do Jogo"
-        />
-        {/* Renderiza os checkboxes para Mecânicas, Categorias e Temas */}
-        {/* Nota: Corrigido para chamar handleCheckboxChange corretamente */}
-        <fieldset>
-          <legend>Mecânicas</legend>
-          {mecanicas.map(mecanica => (
-            <label key={mecanica}>
-              <input
-                type="checkbox"
-                value={mecanica}
-                checked={selecionadasMecanicas.includes(mecanica)}
-                onChange={() => handleCheckboxChange('mecanicas', mecanica)}
-              /> {mecanica}
-            </label>
-          ))}
-        </fieldset>
-        <fieldset>
-          <legend>Categorias</legend>
-          {categorias.map(categoria => (
-            <label key={categoria}>
-              <input
-                type="checkbox"
-                value={categoria}
-                checked={selecionadasCategorias.includes(categoria)}
-                onChange={() => handleCheckboxChange('categorias', categoria)}
-              /> {categoria}
-            </label>
-          ))}
-        </fieldset>
-        <fieldset>
-          <legend>Temas</legend>
-          {temas.map(tema => (
-            <label key={tema}>
-              <input
-                type="checkbox"
-                value={tema}
-                checked={selecionadasTemas.includes(tema)}
-                onChange={() => handleCheckboxChange('temas', tema)}
-              /> {tema}
-            </label>
-          ))}
-        </fieldset>
-        <button type="submit">Buscar</button>
+    <div className="max-w-xl mx-auto p-5">
+      <h1 className="text-2xl font-bold mb-5">Buscar Jogos</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Use the AutocompleteInput for game name */}
+        <AutocompleteInput apiUrl="http://localhost:8000/search-game-names/" placeholder="Nome do Jogo" onSelect={(value) => setNome(value)} />
+        
+        {/* SelectWithCheckboxes for Mechanics, Categories, and Themes */}
+        <SelectWithCheckboxes options={mecanicasOptions} selectedOptions={selecionadasMecanicas} onChange={(value) => handleSelectionChange(setSelecionadasMecanicas, value)} placeholder="Mecânicas" />
+        <SelectWithCheckboxes options={categoriasOptions} selectedOptions={selecionadasCategorias} onChange={(value) => handleSelectionChange(setSelecionadasCategorias, value)} placeholder="Categorias" />
+        <SelectWithCheckboxes options={temasOptions} selectedOptions={selecionadasTemas} onChange={(value) => handleSelectionChange(setSelecionadasTemas, value)} placeholder="Temas" />
+
+        <button type="submit" className="mt-4 px-4 py-2 font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+          Buscar
+        </button>
       </form>
 
       <JogosList jogos={jogos} />

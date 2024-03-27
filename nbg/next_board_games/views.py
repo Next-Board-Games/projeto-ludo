@@ -4,6 +4,9 @@ from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from .models import Jogo, Mecanica, Categoria, Tema
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from .models import Jogo
 
 @api_view(['GET'])
 def recomendar_jogos_view(request):
@@ -64,4 +67,15 @@ def get_temas_view(request):
 @api_view(['GET'])
 def get_nomes_jogos_view(request):
     nomes_jogos = Jogo.objects.all().values_list('nm_jogo', flat=True)
+    return JsonResponse(list(nomes_jogos), safe=False)
+
+@api_view(['GET'])
+def search_game_names_view(request):
+    query = request.GET.get('query', '')
+    if query:
+        # Filter game names by query
+        nomes_jogos = Jogo.objects.filter(nm_jogo__icontains=query).values_list('nm_jogo', flat=True)
+    else:
+        # Return all game names if no query is provided
+        nomes_jogos = Jogo.objects.all().values_list('nm_jogo', flat=True)
     return JsonResponse(list(nomes_jogos), safe=False)

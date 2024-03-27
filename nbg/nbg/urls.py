@@ -29,6 +29,7 @@ urlpatterns = [
     path('get-categorias/', views.get_categorias_view, name='get-categorias'),
     path('get-temas/', views.get_temas_view, name='get-temas'),
     path('get-nomes-jogos/', views.get_nomes_jogos_view, name='get-nomes-jogos'),
+    path('search-game-names/', views.search_game_names_view, name='search-game-names'),
 ]
 
 if settings.DEBUG:
