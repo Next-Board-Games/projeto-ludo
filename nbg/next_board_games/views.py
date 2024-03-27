@@ -7,8 +7,11 @@ from .models import Jogo, Mecanica, Categoria, Tema
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from .models import Jogo
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def recomendar_jogos_view(request):
     nome = request.GET.get('nome', None)
     mecanicas = request.GET.getlist('mecanicas')
@@ -79,3 +82,12 @@ def search_game_names_view(request):
         # Return all game names if no query is provided
         nomes_jogos = Jogo.objects.all().values_list('nm_jogo', flat=True)
     return JsonResponse(list(nomes_jogos), safe=False)
+
+def oauth_callback(request):
+    # Aqui você lidaria com a troca do código de autorização por um token
+    # Por ora, vamos apenas imprimir o que recebemos
+    auth_code = request.GET.get('code', None)
+    if auth_code:
+        print(f"Código de Autorização Recebido: {auth_code}")
+        # Aqui você faria a troca por um token, etc.
+    return JsonResponse({'status': 'Recebido o código de autorização', 'code': auth_code})

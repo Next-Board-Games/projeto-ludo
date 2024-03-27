@@ -18,7 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from next_board_games import views
 
 urlpatterns = [
@@ -30,6 +30,9 @@ urlpatterns = [
     path('get-temas/', views.get_temas_view, name='get-temas'),
     path('get-nomes-jogos/', views.get_nomes_jogos_view, name='get-nomes-jogos'),
     path('search-game-names/', views.search_game_names_view, name='search-game-names'),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('oauth/callback', views.oauth_callback, name='oauth-callback'),
+
 ]
 
 if settings.DEBUG:

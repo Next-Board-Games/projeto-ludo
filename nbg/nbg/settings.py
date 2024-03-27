@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'next_board_games',
     'corsheaders',
+    'oauth2_provider',
 ]
 
 MIDDLEWARE = [
@@ -58,12 +59,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware'
 ]
 
 ROOT_URLCONF = 'nbg.urls'
 
 # Permitir todos os domínios durante o desenvolvimento
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',  # Isso permite acesso não autenticado por padrão
+    ),
+}
 
 TEMPLATES = [
     {
@@ -115,6 +126,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Adicione esta linha
+    'oauth2_provider.backends.OAuth2Backend',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
