@@ -168,3 +168,20 @@ class JogosTidosViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return JogosTidos.objects.filter(usuario=self.request.user)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def estatisticas_view(request):
+    jogos_count = Jogo.objects.count()
+    categorias_count = Categoria.objects.count()
+    mecanicas_count = Mecanica.objects.count()
+    temas_count = Tema.objects.count()
+    
+    estatisticas = {
+        'jogos': jogos_count,
+        'categorias': categorias_count,
+        'mecanicas': mecanicas_count,
+        'temas': temas_count
+    }
+    
+    return JsonResponse(estatisticas)
