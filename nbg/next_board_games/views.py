@@ -3,13 +3,16 @@ from django.db.models import F, Value, IntegerField
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from .models import Jogo, Mecanica, Categoria, Tema
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from .models import Jogo
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from .models import (CustomUser, Mecanica, Categoria, Tema, Profissional, Jogo,
                      ColecaoUsuario, AvaliacaoUsuario, ListaDesejos, JogosJogados, JogosTidos)
 from .serializers import (CustomUserSerializer, MecanicaSerializer, CategoriaSerializer, 
@@ -102,43 +105,66 @@ def oauth_callback(request):
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    # Adicione permissões específicas se necessário
 
 class MecanicaViewSet(viewsets.ModelViewSet):
     queryset = Mecanica.objects.all()
     serializer_class = MecanicaSerializer
+    # IsAdminUser restringe este ViewSet a administradores
+    permission_classes = [IsAdminUser]
 
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
+    permission_classes = [IsAdminUser]
 
 class TemaViewSet(viewsets.ModelViewSet):
     queryset = Tema.objects.all()
     serializer_class = TemaSerializer
+    permission_classes = [IsAdminUser]
 
 class ProfissionalViewSet(viewsets.ModelViewSet):
     queryset = Profissional.objects.all()
     serializer_class = ProfissionalSerializer
+    permission_classes = [IsAdminUser]
 
 class JogoViewSet(viewsets.ModelViewSet):
     queryset = Jogo.objects.all()
     serializer_class = JogoSerializer
+    permission_classes = [IsAdminUser]
 
+# Para ViewSets sem um queryset fixo, definimos o método get_queryset e usamos basename no registro
 class ColecaoUsuarioViewSet(viewsets.ModelViewSet):
-    queryset = ColecaoUsuario.objects.all()
     serializer_class = ColecaoUsuarioSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ColecaoUsuario.objects.filter(usuario=self.request.user)
 
 class AvaliacaoUsuarioViewSet(viewsets.ModelViewSet):
-    queryset = AvaliacaoUsuario.objects.all()
     serializer_class = AvaliacaoUsuarioSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return AvaliacaoUsuario.objects.filter(usuario=self.request.user)
 
 class ListaDesejosViewSet(viewsets.ModelViewSet):
-    queryset = ListaDesejos.objects.all()
     serializer_class = ListaDesejosSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ListaDesejos.objects.filter(usuario=self.request.user)
 
 class JogosJogadosViewSet(viewsets.ModelViewSet):
-    queryset = JogosJogados.objects.all()
     serializer_class = JogosJogadosSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return JogosJogados.objects.filter(usuario=self.request.user)
 
 class JogosTidosViewSet(viewsets.ModelViewSet):
-    queryset = JogosTidos.objects.all()
     serializer_class = JogosTidosSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return JogosTidos.objects.filter(usuario=self.request.user)

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'oauth2_provider',
     'social_django',
+    'drf_yasg',
 ]
 
 AUTH_USER_MODEL = 'next_board_games.CustomUser'
