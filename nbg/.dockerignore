@@ -1,4 +1,4 @@
-# Comentários são permitidos e começam com #
+# Comentários começam com #
 *.pyc
 *.pyo
 *.mo

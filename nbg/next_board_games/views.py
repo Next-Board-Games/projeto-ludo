@@ -9,6 +9,13 @@ from rest_framework.decorators import api_view
 from .models import Jogo
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework import viewsets
+from .models import (CustomUser, Mecanica, Categoria, Tema, Profissional, Jogo,
+                     ColecaoUsuario, AvaliacaoUsuario, ListaDesejos, JogosJogados, JogosTidos)
+from .serializers import (CustomUserSerializer, MecanicaSerializer, CategoriaSerializer, 
+                          TemaSerializer, ProfissionalSerializer, JogoSerializer,
+                          ColecaoUsuarioSerializer, AvaliacaoUsuarioSerializer, 
+                          ListaDesejosSerializer, JogosJogadosSerializer, JogosTidosSerializer)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -91,3 +98,47 @@ def oauth_callback(request):
         print(f"Código de Autorização Recebido: {auth_code}")
         # Aqui você faria a troca por um token, etc.
     return JsonResponse({'status': 'Recebido o código de autorização', 'code': auth_code})
+
+class CustomUserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+
+class MecanicaViewSet(viewsets.ModelViewSet):
+    queryset = Mecanica.objects.all()
+    serializer_class = MecanicaSerializer
+
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+class TemaViewSet(viewsets.ModelViewSet):
+    queryset = Tema.objects.all()
+    serializer_class = TemaSerializer
+
+class ProfissionalViewSet(viewsets.ModelViewSet):
+    queryset = Profissional.objects.all()
+    serializer_class = ProfissionalSerializer
+
+class JogoViewSet(viewsets.ModelViewSet):
+    queryset = Jogo.objects.all()
+    serializer_class = JogoSerializer
+
+class ColecaoUsuarioViewSet(viewsets.ModelViewSet):
+    queryset = ColecaoUsuario.objects.all()
+    serializer_class = ColecaoUsuarioSerializer
+
+class AvaliacaoUsuarioViewSet(viewsets.ModelViewSet):
+    queryset = AvaliacaoUsuario.objects.all()
+    serializer_class = AvaliacaoUsuarioSerializer
+
+class ListaDesejosViewSet(viewsets.ModelViewSet):
+    queryset = ListaDesejos.objects.all()
+    serializer_class = ListaDesejosSerializer
+
+class JogosJogadosViewSet(viewsets.ModelViewSet):
+    queryset = JogosJogados.objects.all()
+    serializer_class = JogosJogadosSerializer
+
+class JogosTidosViewSet(viewsets.ModelViewSet):
+    queryset = JogosTidos.objects.all()
+    serializer_class = JogosTidosSerializer

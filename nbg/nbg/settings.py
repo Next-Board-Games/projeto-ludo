@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'next_board_games',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,10 +46,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'next_board_games',
     'corsheaders',
     'oauth2_provider',
+    'social_django',
 ]
+
+AUTH_USER_MODEL = 'next_board_games.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -129,7 +132,14 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Adicione esta linha
     'oauth2_provider.backends.OAuth2Backend',
+    'social_core.backends.google.GoogleOAuth2',
 ]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '662398830075-5er8fda1eet2pcbtq784pi5983rkktso.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+# Opcional: URL para redirecionar após o login com sucesso.
+LOGIN_REDIRECT_URL = '/recomendar-jogos/?categorias=Miniaturas'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

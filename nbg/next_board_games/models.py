@@ -1,4 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    telefone = models.CharField(max_length=15, blank=True, null=True)
 
 class Mecanica(models.Model):
     id_mecanica = models.IntegerField(primary_key=True)
@@ -49,3 +53,29 @@ class TrainedModel(models.Model):
 
 class ModelStorage(models.Model):
     model_data = models.BinaryField()
+
+class ColecaoUsuario(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    jogo = models.ForeignKey(Jogo, on_delete=models.CASCADE)
+    data_aquisicao = models.DateField()
+    teve = models.BooleanField(default=False)
+
+class AvaliacaoUsuario(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    jogo = models.ForeignKey(Jogo, on_delete=models.CASCADE)
+    avaliacao = models.IntegerField()
+    comentario = models.TextField(blank=True, null=True)
+
+class ListaDesejos(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    jogo = models.ForeignKey(Jogo, on_delete=models.CASCADE)
+
+class JogosJogados(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    jogo = models.ForeignKey(Jogo, on_delete=models.CASCADE)
+    jogado_em = models.DateField()
+
+class JogosTidos(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    jogo = models.ForeignKey(Jogo, on_delete=models.CASCADE)
+    teve = models.BooleanField(default=True)
