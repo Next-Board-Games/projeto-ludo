@@ -1,21 +1,13 @@
-// src/App.js
+// src/components/PrivateRoute.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './Pages/HomePage';
-import AdminPage from './Pages/AdminPage';
-import LoginPage from './components/LoginPage';
-import PrivateRoute from './components/PrivateRoute';
+import { Navigate } from 'react-router-dom';
 
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
-        <Route path="/" element={<HomePage />} />
-      </Routes>
-    </Router>
-  );
-}
+const PrivateRoute = ({ children }) => {
+  // Tente recuperar o token do localStorage
+  const token = localStorage.getItem('token');
 
-export default App;
+  // Se não houver token, redireciona para a página de login
+  return token ? children : <Navigate to="/login" replace />;
+};
+
+export default PrivateRoute;

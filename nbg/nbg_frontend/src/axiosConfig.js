@@ -1,17 +1,16 @@
+// axiosConfig.js
 import axios from 'axios';
 
-// Função para configurar o Axios
-const setupAxios = () => {
-  // Obtém o token de autenticação do localStorage
-  const token = localStorage.getItem('token');
+axios.interceptors.request.use(function (config) {
+    // Tente pegar o token do localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, function (error) {
+    // Fazer algo com o erro da solicitação
+    return Promise.reject(error);
+});
 
-  if (token) {
-    // Se existe um token, adiciona no cabeçalho de autorização de todas as solicitações
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    // Se não existe um token, remove o cabeçalho de autorização
-    delete axios.defaults.headers.common['Authorization'];
-  }
-}
-
-export default setupAxios;
+export default axios;

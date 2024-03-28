@@ -1,23 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    // Verifica se o usuário já possui um token de acesso armazenado
-    const token = localStorage.getItem('token');
-    if (token) {
-      navigate('/admin'); // Redireciona para /admin se o usuário já estiver logado
+    const checkLoginStatus = async () => {
+      try {
+        // Note que aqui estamos especificando o endereço completo, incluindo o domínio e a porta do backend
+        const response = await axios.get('http://localhost:8000/check-user-login/', {
+          withCredentials: true // Importante para enviar cookies de credenciais em chamadas cross-origin
+        });
+        if (response.status === 200) {
+          navigate('/admin');
+        }
+      } catch (error) {
+        console.log('Usuário não autenticado ou erro ao verificar', error);
+      }
+    };
+
+    checkLoginStatus();
+
+    // Verifica se existe uma mensagem de erro na query string
+    const error = new URLSearchParams(location.search).get('error');
+    if (error) {
+      setErrorMessage('Esta conta já está associada a um usuário.');
     }
-  }, [navigate]);
+  }, [navigate, location.search]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
     params.append('client_id', 'mIiFEeY5tjLnkVzGlQkbLhaKHo1oAWd5rIJKX1ia');
@@ -32,9 +49,9 @@ const LoginPage = () => {
         },
       });
       localStorage.setItem('token', response.data.access_token);
-      navigate('/admin'); // Garante o redirecionamento para /admin após o login
+      navigate('/admin');
     } catch (error) {
-      console.error('Erro ao fazer login:', error);
+      console.error('Erro ao fazer login:', error.response || error);
       alert('Falha no login!');
     }
   };
@@ -45,34 +62,49 @@ const LoginPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-md">
+      {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
       <div className="mb-4">
         <h1 className="text-lg font-semibold text-center">Login</h1>
       </div>
       <form onSubmit={handleLogin} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Usuário</label>
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuário</label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Usuário"
+            required
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Senha</label>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Senha</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Senha"
+            required
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Login
+        </button>
       </form>
       <div className="mt-6">
-        <button onClick={handleGoogleLogin} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Login com Google</button>
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+        >
+          Login com Google
+        </button>
       </div>
     </div>
   );

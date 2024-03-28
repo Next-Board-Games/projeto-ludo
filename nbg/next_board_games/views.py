@@ -19,6 +19,9 @@ from .serializers import (CustomUserSerializer, MecanicaSerializer, CategoriaSer
                           TemaSerializer, ProfissionalSerializer, JogoSerializer,
                           ColecaoUsuarioSerializer, AvaliacaoUsuarioSerializer, 
                           ListaDesejosSerializer, JogosJogadosSerializer, JogosTidosSerializer)
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -185,3 +188,15 @@ def estatisticas_view(request):
     }
     
     return JsonResponse(estatisticas)
+
+@api_view(['GET'])
+def informar_usuario_view(request):
+    messages.add_message(request, messages.ERROR, 'Esta conta já está associada a um usuário.')
+    return HttpResponseRedirect('/login/')  # Atualize conforme a URL do seu login
+
+@login_required
+def check_user_login(request):
+    return JsonResponse({
+        'isAuthenticated': True,
+        'username': request.user.username
+    })

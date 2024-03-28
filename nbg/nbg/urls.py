@@ -49,7 +49,10 @@ urlpatterns = [
     path('oauth/', include('social_django.urls', namespace='social')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-   path('estatisticas/', views.estatisticas_view, name='estatisticas'),
+    path('estatisticas/', views.estatisticas_view, name='estatisticas'),
+    path('informar-usuario/', views.informar_usuario_view, name='informar-usuario'),
+    path('check-user-login/', views.check_user_login, name='check-user-login'),
+
 ]
 
 if settings.DEBUG:
