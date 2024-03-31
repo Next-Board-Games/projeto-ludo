@@ -57,13 +57,13 @@ AUTH_USER_MODEL = 'next_board_games.CustomUser'
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
+    'next_board_games.pipeline.already_registered',  # Update this line
     'social_core.pipeline.social_auth.social_user',
-    'next_board_games.pipeline.already_registered',
+    'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.user.user_details'
 )
 
 MIDDLEWARE = [
@@ -75,7 +75,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'oauth2_provider.middleware.OAuth2TokenMiddleware'
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
+    'next_board_games.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'nbg.urls'

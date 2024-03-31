@@ -17,10 +17,12 @@ const ThemeEditor = () => {
 
   const handleSelectChange = (event) => {
     const selectedId = event.target.value;
-    setSelectedThemeId(selectedId);
-    const selectedTheme = themes.find(theme => theme.id.toString() === selectedId);
+    // Find the selected theme using its ID.
+    const selectedTheme = themes.find(theme => theme.id_tema.toString() === selectedId);
+    // Set the selected theme ID and name based on the selection.
+    setSelectedThemeId(selectedTheme ? selectedTheme.id_tema : '');
     setThemeName(selectedTheme ? selectedTheme.nm_tema : '');
-  };
+  };  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,12 +44,14 @@ const ThemeEditor = () => {
     <div className="mb-8">
       <h2 className="text-lg font-semibold mb-3">Editar Temas</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <select value={selectedThemeId} onChange={handleSelectChange} className="block w-full p-2 border border-gray-300">
-          <option value="">Selecione um Tema</option>
-          {themes.map(theme => (
-            <option key={theme.id} value={theme.id}>{theme.nm_tema}</option>
-          ))}
-        </select>
+            <select value={selectedThemeId} onChange={handleSelectChange} className="block w-full p-2 border border-gray-300">
+        <option value="">Selecione um tema</option>
+        {themes.map((theme) => (
+          <option key={theme.id_tema} value={theme.id_tema}>
+            {theme.nm_tema}
+          </option>
+        ))}
+      </select>
         <input
           type="text"
           placeholder="Nome do Tema"

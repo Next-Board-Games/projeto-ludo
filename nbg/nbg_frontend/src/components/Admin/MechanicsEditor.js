@@ -17,10 +17,10 @@ const MechanicsEditor = () => {
 
   const handleSelectChange = (event) => {
     const selectedId = event.target.value;
-    setSelectedMechanicId(selectedId);
-    const selectedMechanic = mechanics.find(m => m.id.toString() === selectedId);
+    const selectedMechanic = mechanics.find(m => m.id_mecanica.toString() === selectedId);
+    setSelectedMechanicId(selectedMechanic ? selectedMechanic.id_mecanica : '');
     setMechanicName(selectedMechanic ? selectedMechanic.nm_mecanica : '');
-  };
+  };  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,12 +42,12 @@ const MechanicsEditor = () => {
     <div className="mb-8">
       <h2 className="text-lg font-semibold mb-3">Editar Mecânicas</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <select value={selectedMechanicId} onChange={handleSelectChange} className="block w-full p-2 border border-gray-300">
-          <option value="">Selecione uma Mecânica</option>
-          {mechanics.map(mechanic => (
-            <option key={mechanic.id} value={mechanic.id}>{mechanic.nm_mecanica}</option>
-          ))}
-        </select>
+            <select value={selectedMechanicId} onChange={handleSelectChange} className="block w-full p-2 border border-gray-300">
+        <option value="">Selecione uma Mecânica</option>
+        {mechanics.map(mechanic => (
+          <option key={mechanic.id_mecanica} value={mechanic.id_mecanica}>{mechanic.nm_mecanica}</option>
+        ))}
+      </select>
         <input
           type="text"
           placeholder="Nome da Mecânica"

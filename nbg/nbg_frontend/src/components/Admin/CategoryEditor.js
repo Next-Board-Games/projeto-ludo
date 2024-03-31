@@ -18,8 +18,8 @@ const CategoryEditor = () => {
 
   const handleSelectChange = (event) => {
     const selectedId = event.target.value;
-    setSelectedCategoryId(selectedId);
-    const selectedCategory = categories.find(c => c.id.toString() === selectedId);
+    const selectedCategory = categories.find(c => c.id_categoria.toString() === selectedId);
+    setSelectedCategoryId(selectedCategory ? selectedCategory.id_categoria : '');
     setCategoryName(selectedCategory ? selectedCategory.nm_categoria : '');
   };
 
@@ -27,7 +27,7 @@ const CategoryEditor = () => {
     event.preventDefault();
     const url = selectedCategoryId ? `http://localhost:8000/categorias/${selectedCategoryId}/` : 'http://localhost:8000/categorias/';
     const method = selectedCategoryId ? 'patch' : 'post';
-
+  
     try {
       await axios({ method, url, data: { nm_categoria: categoryName } });
       alert('Categoria salva com sucesso!');
@@ -43,12 +43,14 @@ const CategoryEditor = () => {
     <div className="mb-8">
       <h2 className="text-lg font-semibold mb-3">Editar Categorias</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <select value={selectedCategoryId} onChange={handleSelectChange} className="block w-full p-2 border border-gray-300">
-          <option value="">Selecione uma Categoria</option>
-          {categories.map(category => (
-            <option key={category.id} value={category.id}>{category.nm_categoria}</option>
-          ))}
-        </select>
+          <select value={selectedCategoryId} onChange={handleSelectChange} className="block w-full p-2 border border-gray-300">
+            <option value="">Selecione uma categoria</option>
+            {categories.map((category) => (
+              <option key={category.id_categoria} value={category.id_categoria}>
+                {category.nm_categoria}
+              </option>
+            ))}
+          </select>
         <input
           type="text"
           placeholder="Nome da Categoria"

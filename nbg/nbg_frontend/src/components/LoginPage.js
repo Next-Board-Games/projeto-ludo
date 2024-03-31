@@ -12,27 +12,30 @@ const LoginPage = () => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        // Note que aqui estamos especificando o endereço completo, incluindo o domínio e a porta do backend
         const response = await axios.get('http://localhost:8000/check-user-login/', {
-          withCredentials: true // Importante para enviar cookies de credenciais em chamadas cross-origin
+          withCredentials: true
         });
         if (response.status === 200) {
           navigate('/admin');
         }
       } catch (error) {
-        console.log('Usuário não autenticado ou erro ao verificar', error);
+        if (error.response && error.response.data && error.response.data.exception === 'AuthAlreadyAssociated') {
+          setErrorMessage('This account is already associated with a user.');
+        } else {
+          console.log('Error while checking user login status', error);
+        }
       }
     };
-
+  
     checkLoginStatus();
-
-    // Verifica se existe uma mensagem de erro na query string
+  
     const error = new URLSearchParams(location.search).get('error');
     if (error) {
-      setErrorMessage('Esta conta já está associada a um usuário.');
+      setErrorMessage('This account is already associated with a user.');
     }
   }, [navigate, location.search]);
 
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
@@ -58,6 +61,14 @@ const LoginPage = () => {
 
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:8000/oauth/login/google-oauth2/';
+  };
+
+  const handleLogout = () => {
+    // Remove the user's token from local storage
+    localStorage.removeItem('token');
+
+    // Redirect the user to the login page
+    navigate('/login');
   };
 
   return (
@@ -104,6 +115,12 @@ const LoginPage = () => {
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
           Login com Google
+        </button>
+        <button
+          onClick={handleLogout}
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mt-4"
+        >
+          Logout
         </button>
       </div>
     </div>
