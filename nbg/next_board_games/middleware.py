@@ -1,5 +1,8 @@
-from django.shortcuts import redirect
-from .pipeline import SocialAuthAlreadyAssociated
+from django.http import JsonResponse
+from .exceptions import SocialAuthAlreadyAssociated
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SocialAuthExceptionMiddleware:
     def __init__(self, get_response):
@@ -9,8 +12,7 @@ class SocialAuthExceptionMiddleware:
         response = self.get_response(request)
         return response
 
-from django.http import JsonResponse
-
-def process_exception(self, request, exception):
-    if isinstance(exception, SocialAuthAlreadyAssociated):
-        return JsonResponse({'error': 'This social account is already associated with a user.'}, status=409)
+    def process_exception(self, request, exception):
+        if isinstance(exception, SocialAuthAlreadyAssociated):
+            logger.info("SocialAuthAlreadyAssociated exception caught in middleware.")
+            return JsonResponse({'error': 'This social account is already associated with a user.'}, status=409)
