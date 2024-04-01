@@ -1,7 +1,12 @@
 // src/App.js
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './Pages/HomePage';
+import JogosPage from './components/jogos/JogosPage';
+import JogoForm from './components/jogos/JogoForm';
+import Dashboard from './Pages/Dashboard'; // Importando Dashboard a partir de /src/pages
+import Sidebar from './components/Sidebar';
+import './App.css'; // Certifique-se de ter o CSS do Tailwind importado corretamente
 import AdminPage from './Pages/AdminPage';
 import LoginPage from './components/LoginPage';
 import PrivateRoute from './components/PrivateRoute'; // Certifique-se de importar PrivateRoute
@@ -15,15 +20,24 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-grow p-4">
+          <Routes>
+          <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={
           <PrivateRoute>
             <AdminPage />
           </PrivateRoute>
         } />
-        <Route path="/" element={<HomePage />} />
-      </Routes>
+            <Route path="/admin/dashboard" element={<Dashboard />} />
+            <Route path="/admin/jogos" element={<JogosPage />} />
+            <Route path="/admin/jogos/novo" element={<JogoForm />} />
+            <Route path="/admin/jogos/editar/:id" element={<JogoForm />} />
+            {/* Defina mais rotas conforme necessário */}
+          </Routes>
+        </div>
+      </div>
     </Router>
   );
 }

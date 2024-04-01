@@ -9,16 +9,16 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="NBG API",
-      default_version='v1',
-      description="Documentação da API para NBG",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@nbg.local"),
-      license=openapi.License(name="BSD License"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="NBG API",
+        default_version='v1',
+        description="Documentação da API para NBG",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@nbg.local"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
 router = DefaultRouter()
@@ -37,8 +37,8 @@ router.register(r'jogostidos', views.JogosTidosViewSet, basename='jogos-tidos')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),
-    path('recomendar-jogos/', views.recomendar_jogos_view, name='recomendar-jogos'),
+    path('api/', include(router.urls)),  # Modificação aqui para incluir todas as rotas do router sob o prefixo /api/
+    path('api/recomendar-jogos/', views.recomendar_jogos_view, name='recomendar-jogos'),
     path('get-mecanicas/', views.get_mecanicas_view, name='get-mecanicas'),
     path('get-categorias/', views.get_categorias_view, name='get-categorias'),
     path('get-temas/', views.get_temas_view, name='get-temas'),
