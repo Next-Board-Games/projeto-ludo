@@ -12,7 +12,7 @@ const CategoryEditor = () => {
   }, []);
 
   const fetchCategories = async () => {
-    const { data } = await axios.get('http://localhost:8000/categorias/');
+    const { data } = await axios.get('http://localhost:8000/api/categorias/');
     setCategories(data);
   };
 
@@ -25,7 +25,7 @@ const CategoryEditor = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const url = selectedCategoryId ? `http://localhost:8000/categorias/${selectedCategoryId}/` : 'http://localhost:8000/categorias/';
+    const url = selectedCategoryId ? `http://localhost:8000/api/categorias/${selectedCategoryId}/` : 'http://localhost:8000/api/categorias/';
     const method = selectedCategoryId ? 'patch' : 'post';
   
     try {

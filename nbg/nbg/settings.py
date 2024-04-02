@@ -81,8 +81,17 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'nbg.urls'
 
-# Permitir todos os domínios durante o desenvolvimento
-CORS_ALLOW_ALL_ORIGINS = True
+# # Permitir todos os domínios durante o desenvolvimento
+# CORS_ALLOW_ALL_ORIGINS = True
+
+# Adicione os domínios específicos que podem fazer requisições
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Front-end React
+]
+
+# Adicionalmente, para permitir cookies e headers de autorização em requisições cross-origin,
+# você pode precisar configurar:
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

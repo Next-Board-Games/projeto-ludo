@@ -11,7 +11,7 @@ const ThemeEditor = () => {
   }, []);
 
   const fetchThemes = async () => {
-    const { data } = await axios.get('http://localhost:8000/temas/');
+    const { data } = await axios.get('http://localhost:8000/api/temas/');
     setThemes(data);
   };
 
@@ -26,7 +26,7 @@ const ThemeEditor = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const url = selectedThemeId ? `http://localhost:8000/temas/${selectedThemeId}/` : 'http://localhost:8000/temas/';
+    const url = selectedThemeId ? `http://localhost:8000/api/temas/${selectedThemeId}/` : 'http://localhost:8000/api/temas/';
     const method = selectedThemeId ? 'patch' : 'post';
 
     try {

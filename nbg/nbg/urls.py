@@ -36,6 +36,7 @@ router.register(r'jogosjogados', views.JogosJogadosViewSet, basename='jogos-joga
 router.register(r'jogostidos', views.JogosTidosViewSet, basename='jogos-tidos')
 
 urlpatterns = [
+    path('', views.api_status),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),  # Modificação aqui para incluir todas as rotas do router sob o prefixo /api/
     path('api/recomendar-jogos/', views.recomendar_jogos_view, name='recomendar-jogos'),
@@ -52,7 +53,6 @@ urlpatterns = [
     path('estatisticas/', views.estatisticas_view, name='estatisticas'),
     path('informar-usuario/', views.informar_usuario_view, name='informar-usuario'),
     path('check-user-login/', views.check_user_login, name='check-user-login'),
-
 ]
 
 if settings.DEBUG:

@@ -1,35 +1,32 @@
-// src/App.js
-import React from 'react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import JogosPage from './components/jogos/JogosPage';
 import JogoForm from './components/jogos/JogoForm';
-import Dashboard from './Pages/Dashboard'; // Importando Dashboard a partir de /src/pages
+import Dashboard from './Pages/Dashboard';
 import Sidebar from './components/Sidebar';
-import './App.css'; // Certifique-se de ter o CSS do Tailwind importado corretamente
+import './App.css'; // Certifique-se de que o Tailwind CSS está sendo importado corretamente
 import AdminPage from './Pages/AdminPage';
 import LoginPage from './components/LoginPage';
-import PrivateRoute from './components/PrivateRoute'; // Certifique-se de importar PrivateRoute
+import PrivateRoute from './components/PrivateRoute';
 import setupAxios from './axiosConfig';
 
 function App() {
   useEffect(() => {
-    // Garante que o interceptador de axios seja configurado quando o componente é montado
     setupAxios();
   }, []);
 
   return (
     <Router>
-      <div className="flex">
+      <div className="flex min-h-screen">
         <Sidebar />
-        <div className="flex-grow p-4">
+        <div className="flex-grow p-4 ml-64"> {/* Ajuste a margem esquerda conforme a largura da sua Sidebar */}
           <Routes>
-          <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin" element={
-          <PrivateRoute>
-            <AdminPage />
-          </PrivateRoute>
-        } />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin" element={
+              <PrivateRoute>
+                <AdminPage />
+              </PrivateRoute>
+            } />
             <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/jogos" element={<JogosPage />} />
             <Route path="/admin/jogos/novo" element={<JogoForm />} />

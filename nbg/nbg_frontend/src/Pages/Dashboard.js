@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -10,34 +9,32 @@ const Dashboard = () => {
     mechanics: 0,
     themes: 0,
   });
-
-  const navigate = useNavigate(); // Initialize navigate
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axios.get("/estatisticas/");
+        setStats({ 
+          games: response.data.jogos, 
+          categories: response.data.categorias, 
+          mechanics: response.data.mecanicas, 
+          themes: response.data.temas 
+        });
+      } catch (err) {
+        setError('Falha ao buscar estatísticas.');
+        console.error("Erro ao buscar estatísticas:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchStats();
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/estatisticas/");
-      const { jogos, categorias, mecanicas, temas } = response.data;
-  
-      setStats({ 
-        games: jogos, 
-        categories: categorias, 
-        mechanics: mecanicas, 
-        themes: temas 
-      });
-    } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
-    }
-  };
-
-//   If you don't need logout yet, consider removing or commenting out this function
-//   const logout = () => {
-//     localStorage.removeItem('token');
-//     navigate('/login');
-//   };
+  if (isLoading) return <div>Carregando...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-10">

@@ -8,34 +8,37 @@ const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [checkedLoginStatus, setCheckedLoginStatus] = useState(false); // Novo estado para controlar a checagem
 
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/check-user-login/', {
-          withCredentials: true
-        });
-        if (response.status === 200) {
-          navigate('/admin');
+    if (!checkedLoginStatus) { // Verifica se a checagem já foi realizada
+      const checkLoginStatus = async () => {
+        try {
+          const response = await axios.get('/check-user-login/', {
+            withCredentials: true
+          });
+          if (response.status === 200 && response.data.isAuthenticated) {
+            navigate('/admin');
+          }
+        } catch (error) {
+          if (error.response && error.response.data && error.response.data.exception === 'AuthAlreadyAssociated') {
+            setErrorMessage('This account is already associated with a user.');
+          } else {
+            console.log('Error while checking user login status', error);
+          }
         }
-      } catch (error) {
-        if (error.response && error.response.data && error.response.data.exception === 'AuthAlreadyAssociated') {
-          setErrorMessage('This account is already associated with a user.');
-        } else {
-          console.log('Error while checking user login status', error);
-        }
-      }
-    };
-  
-    checkLoginStatus();
-  
+      };
+
+      checkLoginStatus();
+      setCheckedLoginStatus(true); // Marca que a checagem foi realizada
+    }
+
     const error = new URLSearchParams(location.search).get('error');
     if (error) {
       setErrorMessage('This account is already associated with a user.');
     }
-  }, [navigate, location.search]);
+  }, [navigate, location.search, checkedLoginStatus]); // Adiciona checkedLoginStatus às dependências
 
-  
   const handleLogin = async (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
@@ -46,7 +49,7 @@ const LoginPage = () => {
     params.append('password', password);
 
     try {
-      const response = await axios.post('http://localhost:8000/o/token/', params.toString(), {
+      const response = await axios.post('/o/token/', params.toString(), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -60,15 +63,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8000/oauth/login/google-oauth2/';
-  };
-
-  const handleLogout = () => {
-    // Remove the user's token from local storage
-    localStorage.removeItem('token');
-
-    // Redirect the user to the login page
-    navigate('/login');
+    window.location.href = '/oauth/login/google-oauth2/'; // Ajuste conforme necessário
   };
 
   return (
@@ -115,12 +110,6 @@ const LoginPage = () => {
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
           Login com Google
-        </button>
-        <button
-          onClick={handleLogout}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mt-4"
-        >
-          Logout
         </button>
       </div>
     </div>

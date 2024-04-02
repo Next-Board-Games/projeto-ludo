@@ -22,6 +22,7 @@ from .serializers import (CustomUserSerializer, MecanicaSerializer, CategoriaSer
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from rest_framework.pagination import PageNumberPagination
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -194,9 +195,24 @@ def informar_usuario_view(request):
     messages.add_message(request, messages.ERROR, 'Esta conta já está associada a um usuário.')
     return HttpResponseRedirect('/login/')  # Atualize conforme a URL do seu login
 
-@login_required
+# No arquivo views.py
+
+@api_view(['GET'])
 def check_user_login(request):
-    return JsonResponse({
-        'isAuthenticated': True,
-        'username': request.user.username
-    })
+    if request.user.is_authenticated:
+        return JsonResponse({"isAuthenticated": True, "username": request.user.username}, status=200)
+    else:
+        return JsonResponse({"isAuthenticated": False}, status=200)
+
+def api_status(request):
+    return JsonResponse({"status": "API is up and running!"})
+
+class JogoPagination(PageNumberPagination):
+    page_size = 10  # Quantidade de itens por página
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class JogoViewSet(viewsets.ModelViewSet):
+    queryset = Jogo.objects.all()
+    serializer_class = JogoSerializer
+    pagination_class = JogoPagination

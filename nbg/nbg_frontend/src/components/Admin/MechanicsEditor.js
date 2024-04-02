@@ -11,7 +11,7 @@ const MechanicsEditor = () => {
   }, []);
 
   const fetchMechanics = async () => {
-    const { data } = await axios.get('http://localhost:8000/mecanicas/');
+    const { data } = await axios.get('http://localhost:8000/api/mecanicas/');
     setMechanics(data);
   };
 
@@ -24,7 +24,7 @@ const MechanicsEditor = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const url = selectedMechanicId ? `http://localhost:8000/mecanicas/${selectedMechanicId}/` : 'http://localhost:8000/mecanicas/';
+    const url = selectedMechanicId ? `http://localhost:8000/api/mecanicas/${selectedMechanicId}/` : 'http://localhost:8000/api/mecanicas/';
     const method = selectedMechanicId ? 'patch' : 'post';
 
     try {
