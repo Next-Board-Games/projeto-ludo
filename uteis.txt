@@ -2,6 +2,8 @@ docker-compose up -d
 
 docker-compose up --build --force-recreate
 
+docker-compose up --build --force-recreate react
+
 docker exec nbg python manage.py importar_jogos_detalhe /src/jogos_detalhe.json
 
 docker exec -it nbg python manage.py prepare_data

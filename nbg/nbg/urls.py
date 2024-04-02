@@ -53,6 +53,11 @@ urlpatterns = [
     path('estatisticas/', views.estatisticas_view, name='estatisticas'),
     path('informar-usuario/', views.informar_usuario_view, name='informar-usuario'),
     path('check-user-login/', views.check_user_login, name='check-user-login'),
+    path('api/estatisticas/jogos-por-mecanica/', views.estatisticas_jogos_por_mecanica, name='estatisticas-jogos-por-mecanica'),
+    path('api/estatisticas/jogos-por-tema/', views.estatisticas_jogos_por_tema, name='estatisticas-jogos-por-tema'),
+    path('api/estatisticas/jogos-por-categoria/', views.estatisticas_jogos_por_categoria, name='estatisticas-jogos-por-categoria'),
+    path('api/estatisticas/usuarios-por-dia/', views.estatisticas_usuarios_por_dia, name='estatisticas-usuarios-por-dia'),
+    path('api/estatisticas/jogos/', views.estatisticas_jogos, name='estatisticas-jogos'),
 ]
 
 if settings.DEBUG:

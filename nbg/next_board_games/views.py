@@ -2,14 +2,10 @@ from django.core.cache import cache
 from django.db.models import F, Value, IntegerField
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
 from .models import Jogo
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, permissions
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from rest_framework.permissions import IsAuthenticated
@@ -23,6 +19,11 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from rest_framework.pagination import PageNumberPagination
+from django.db.models import Count, DateField
+from django.db.models.functions import TruncDay
+from rest_framework import status
+from django.utils.dateparse import parse_date
+from django.shortcuts import get_object_or_404
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -216,3 +217,98 @@ class JogoViewSet(viewsets.ModelViewSet):
     queryset = Jogo.objects.all()
     serializer_class = JogoSerializer
     pagination_class = JogoPagination
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
+def estatisticas_usuarios_por_dia(request):
+    data_inicio = request.query_params.get('data_inicio')
+    data_fim = request.query_params.get('data_fim')
+    data_inicio = parse_date(data_inicio) if data_inicio else None
+    data_fim = parse_date(data_fim) if data_fim else None
+    
+    queryset = CustomUser.objects.annotate(date=TruncDay('date_joined'))
+    if data_inicio and data_fim:
+        queryset = queryset.filter(date__range=[data_inicio, data_fim])
+    novos_usuarios = queryset.values('date').annotate(count=Count('id'))
+    return Response(novos_usuarios)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def estatisticas_jogos_por_mecanica(request):
+    parametro_mecanica = request.query_params.get('mecanica')
+    
+    if parametro_mecanica.isdigit():
+        # Trata como ID
+        mecanica = get_object_or_404(Mecanica, pk=parametro_mecanica)
+        jogos = Jogo.objects.filter(mecanicas=mecanica)
+    else:
+        # Trata como nome
+        mecanica = get_object_or_404(Mecanica, nm_mecanica=parametro_mecanica)
+        jogos = Jogo.objects.filter(mecanicas=mecanica)
+    
+    jogos_por_mecanica = jogos.values('mecanicas__nm_mecanica').annotate(total=Count('mecanicas')).order_by('-total')
+    return Response(list(jogos_por_mecanica))
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def estatisticas_jogos_por_tema(request):
+    parametro_tema = request.query_params.get('tema')
+    
+    if parametro_tema.isdigit():
+        # Trata como ID
+        tema = get_object_or_404(Tema, pk=parametro_tema)
+        jogos = Jogo.objects.filter(temas=tema)
+    else:
+        # Trata como nome
+        tema = get_object_or_404(Tema, nm_tema=parametro_tema)
+        jogos = Jogo.objects.filter(temas=tema)
+    
+    jogos_por_tema = jogos.values('temas__nm_tema').annotate(total=Count('temas')).order_by('-total')
+    return Response(list(jogos_por_tema))
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def estatisticas_jogos_por_categoria(request):
+    parametro_categoria = request.query_params.get('categoria')
+    
+    if parametro_categoria.isdigit():
+        # Trata como ID
+        categoria = get_object_or_404(Categoria, pk=parametro_categoria)
+        jogos = Jogo.objects.filter(categorias=categoria)
+    else:
+        # Trata como nome
+        categoria = get_object_or_404(Categoria, nm_categoria=parametro_categoria)
+        jogos = Jogo.objects.filter(categorias=categoria)
+    
+    jogos_por_categoria = jogos.values('categorias__nm_categoria').annotate(total=Count('categorias')).order_by('-total')
+    return Response(list(jogos_por_categoria))
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def estatisticas_jogos(request):
+    # Recupere os parâmetros de filtro da query string
+    categoria = request.query_params.get('categoria')
+    mecanica = request.query_params.get('mecanica')
+    tema = request.query_params.get('tema')
+
+    # Comece com todos os jogos
+    jogos = Jogo.objects.all()
+
+    # Aplique os filtros conforme necessário
+    if categoria:
+        jogos = jogos.filter(categorias__nm_categoria=categoria)
+    if mecanica:
+        jogos = jogos.filter(mecanicas__nm_mecanica=mecanica)
+    if tema:
+        jogos = jogos.filter(temas__nm_tema=tema)
+
+    # Aqui, você irá simplesmente contar o total de jogos após aplicar os filtros
+    total_jogos = jogos.count()
+
+    # Crie a resposta
+    resposta = {
+        "total": total_jogos
+    }
+
+    return Response(resposta)
