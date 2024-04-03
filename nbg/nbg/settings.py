@@ -25,7 +25,7 @@ DATA_DIR = BASE_DIR.parent / 'data' / 'web'
 DEBUG = bool(int(os.getenv('DEBUG', 0)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'change-me')
+SECRET_KEY = 'yx7!)$ectn!jk^8r@q*3lea6%fbq=lsl_iz9t#fgd*9$l8ky3+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -125,12 +125,12 @@ WSGI_APPLICATION = 'nbg.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'change-me'),
-        'NAME': os.getenv('POSTGRES_DB', 'change-me'),
-        'USER': os.getenv('POSTGRES_USER', 'change-me'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'change-me'),
-        'HOST': os.getenv('POSTGRES_HOST', 'change-me'),
-        'PORT': os.getenv('POSTGRES_PORT', 'change-me'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'jogos_detalhe',
+        'USER': 'detalhe_user',
+        'PASSWORD': 'NBG2000',
+        'HOST': 'psql',
+        'PORT': '5432',
     }
 }
 
