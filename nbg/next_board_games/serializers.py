@@ -5,7 +5,7 @@ from .models import (CustomUser, Mecanica, Categoria, Tema, Profissional, Jogo,
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'telefone', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'telefone', 'first_name', 'last_name', 'is_staff']
 
 class MecanicaSerializer(serializers.ModelSerializer):
     class Meta:

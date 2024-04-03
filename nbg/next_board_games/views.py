@@ -24,6 +24,7 @@ from django.db.models.functions import TruncDay
 from rest_framework import status
 from django.utils.dateparse import parse_date
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -107,26 +108,137 @@ def oauth_callback(request):
         # Aqui você faria a troca por um token, etc.
     return JsonResponse({'status': 'Recebido o código de autorização', 'code': auth_code})
 
+class CustomUserPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
-    # Adicione permissões específicas se necessário
+    permission_classes = [permissions.AllowAny]
+    pagination_class = CustomUserPagination
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        username = self.request.query_params.get('username', None)
+        email = self.request.query_params.get('email', None)
+        if username:
+            queryset = queryset.filter(username__icontains=username)
+        if email:
+            queryset = queryset.filter(email__icontains=email)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        if 'all' in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
+
+class MecanicaPagination(PageNumberPagination):
+    page_size = 10  # Define o número de itens por página
+    page_size_query_param = 'page_size'  # Permite ao cliente especificar o tamanho da página
+    max_page_size = 100  # Máximo tamanho da página permitido
+
+# MecanicaViewSet com paginação e suporte à desativação da mesma
 class MecanicaViewSet(viewsets.ModelViewSet):
     queryset = Mecanica.objects.all()
     serializer_class = MecanicaSerializer
-    # IsAdminUser restringe este ViewSet a administradores
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
+    pagination_class = MecanicaPagination
+
+    def get_queryset(self):
+        """
+        Opcionalmente filtra a queryset baseado no parâmetro 'nome'.
+        """
+        queryset = super().get_queryset()
+        nome = self.request.query_params.get('nome', None)
+        if nome:
+            queryset = queryset.filter(nm_mecanica__icontains=nome)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """
+        Desativa a paginação se o parâmetro 'all' estiver presente na query string.
+        """
+        if 'all' in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
+
+# Classe para configurar a paginação
+class CategoriaPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = [AllowAny]
+    pagination_class = CategoriaPagination  # Mantém a classe de paginação padrão
 
+    def get_queryset(self):
+        """
+        Opcionalmente filtra a queryset baseado no parâmetro 'nome', mantendo a funcionalidade original
+        """
+        queryset = super().get_queryset()  # Chama a implementação original para manter a compatibilidade
+        nome = self.request.query_params.get('nome', None)
+
+        # Aplica o filtro se o parâmetro 'nome' estiver presente
+        if nome:
+            queryset = queryset.filter(nm_categoria__icontains=nome)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """
+        Desativa a paginação se o parâmetro 'all' estiver presente na query string.
+        """
+        if 'all' in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+
+            # Utilize o serializador da classe para renderizar a resposta sem paginação.
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        # Se o parâmetro 'all' não estiver presente, continue com a execução padrão.
+        return super().list(request, *args, **kwargs)
+
+# Classe de paginação para Tema
+class TemaPagination(PageNumberPagination):
+    page_size = 10  # Define o número de itens por página
+    page_size_query_param = 'page_size'  # Permite ao cliente especificar o tamanho da página
+    max_page_size = 100  # Máximo tamanho da página permitido
+
+# TemaViewSet com paginação e suporte à desativação da mesma
 class TemaViewSet(viewsets.ModelViewSet):
     queryset = Tema.objects.all()
     serializer_class = TemaSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
+    pagination_class = TemaPagination
+
+    def get_queryset(self):
+        """
+        Opcionalmente filtra a queryset baseado no parâmetro 'nome'.
+        """
+        queryset = super().get_queryset()
+        nome = self.request.query_params.get('nome', None)
+        if nome:
+            queryset = queryset.filter(nm_tema__icontains=nome)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """
+        Desativa a paginação se o parâmetro 'all' estiver presente na query string.
+        """
+        if 'all' in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
 
 class ProfissionalViewSet(viewsets.ModelViewSet):
     queryset = Profissional.objects.all()
@@ -232,14 +344,30 @@ class JogoViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        """
+        Filtra a queryset baseada nos parâmetros opcionais 'categoria', 'mecanica', e 'tema'.
+        """
         queryset = super().get_queryset()
+        # Captura os parâmetros da query string
         nome = self.request.query_params.get('nome', None)
-        
-        # Filtra a queryset por nome, se um nome foi fornecido
+        categoria = self.request.query_params.get('categoria', None)
+        mecanica = self.request.query_params.get('mecanica', None)
+        tema = self.request.query_params.get('tema', None)
+
+        # Filtra por nome, se fornecido
         if nome:
             queryset = queryset.filter(nm_jogo__icontains=nome)
-        
-        return queryset
+        # Filtra por categoria, se fornecido
+        if categoria:
+            queryset = queryset.filter(categorias__id_categoria=categoria)
+        # Filtra por mecânica, se fornecido
+        if mecanica:
+            queryset = queryset.filter(mecanicas__id_mecanica=mecanica)
+        # Filtra por tema, se fornecido
+        if tema:
+            queryset = queryset.filter(temas__id_tema=tema)
+
+        return queryset.distinct()
 
 @api_view(['GET'])
 # @permission_classes([IsAuthenticated])

@@ -41,9 +41,9 @@ const JogoForm = () => {
     const loadOptions = async () => {
       try {
         const [mecanicasRes, categoriasRes, temasRes, artistasRes, designersRes] = await Promise.all([
-            axios.get('http://localhost:8000/api/mecanicas/'),
-            axios.get('http://localhost:8000/api/categorias/'),
-            axios.get('http://localhost:8000/api/temas/'),
+            axios.get('http://localhost:8000/api/mecanicas/?all'),
+            axios.get('http://localhost:8000/api/categorias/?all'),
+            axios.get('http://localhost:8000/api/temas/?all'),
             axios.get('http://localhost:8000/api/profissionais/?tipo=artista'),
             axios.get('http://localhost:8000/api/profissionais/?tipo=designer'),
           ]);

@@ -139,9 +139,9 @@ const Dashboard = () => {
     const fetchFilterData = async () => {
       try {
         const [categoryResp, mechanicResp, themeResp] = await Promise.all([
-          axios.get('/api/categorias/'),
-          axios.get('/api/mecanicas/'),
-          axios.get('/api/temas/')
+          axios.get('/api/categorias/?all'),
+          axios.get('/api/mecanicas/?all'),
+          axios.get('/api/temas/?all')
         ]);
         setCategories(categoryResp.data.map(item => ({ id_categoria: item.id_categoria, nm_categoria: item.nm_categoria })));
         setMechanics(mechanicResp.data.map(item => ({ id_mecanica: item.id_mecanica, nm_mecanica: item.nm_mecanica })));
