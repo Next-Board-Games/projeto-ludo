@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Bar, Line } from 'react-chartjs-2';
 import {
@@ -16,7 +16,6 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
-// Registro dos componentes necessários do ChartJS
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -30,7 +29,6 @@ ChartJS.register(
   TimeSeriesScale
 );
 
-// Função para gerar um intervalo de datas
 const generateDateRange = (start, end) => {
   let startDate = new Date(start);
   let endDate = new Date(end);
@@ -42,8 +40,87 @@ const generateDateRange = (start, end) => {
   return dateRange;
 };
 
+const FilterMultiSelect = ({ label, options, selectedValues, onChange, type }) => {
+  const [showOptions, setShowOptions] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    // Função para detectar cliques fora do componente
+    function handleClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setShowOptions(false);
+      }
+    }
+
+    // Adiciona o ouvinte de evento ao documento
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Limpeza do ouvinte de evento
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [wrapperRef]);
+
+  const toggleOption = (value) => {
+    const isSelected = selectedValues.includes(value);
+    if (isSelected) {
+      onChange(selectedValues.filter((item) => item !== value));
+    } else {
+      onChange([...selectedValues, value]);
+    }
+  };
+
+  const filteredOptions = options.filter((option) =>
+    option[`nm_${type}`].toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleInputClick = () => {
+    setShowOptions(true); // Exibe o dropdown ao clicar no campo de input
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative mb-4">
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div className="flex justify-between border border-gray-300 rounded-md shadow-sm mt-1">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onClick={handleInputClick} // Adiciona o evento de clique ao input
+          placeholder={`Search ${label}...`}
+          className="p-2 w-full"
+        />
+        <button
+          onClick={() => setShowOptions(!showOptions)}
+          type="button"
+          className="px-4 border-l"
+        >
+          &#9660;
+        </button>
+      </div>
+      {showOptions && (
+        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option) => (
+              <div key={option[`id_${type}`]} className="flex items-center p-2 hover:bg-gray-100 cursor-pointer" onClick={() => toggleOption(option[`nm_${type}`])}>
+                <input
+                  type="checkbox"
+                  checked={selectedValues.includes(option[`nm_${type}`])}
+                  onChange={() => {}}
+                  className="form-checkbox h-5 w-5 text-blue-600 mr-2"
+                />
+                <span>{option[`nm_${type}`]}</span>
+              </div>
+            ))
+          ) : (
+            <div className="p-2 text-gray-700">No options found</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Dashboard = () => {
-  // Estados para armazenar dados de usuários e filtros
   const [userData, setUserData] = useState({ datasets: [] });
   const [categories, setCategories] = useState([]);
   const [mechanics, setMechanics] = useState([]);
@@ -51,17 +128,13 @@ const Dashboard = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedMechanics, setSelectedMechanics] = useState([]);
   const [selectedThemes, setSelectedThemes] = useState([]);
-
-  // Estados para datas de início e fim
   const defaultStartDate = new Date();
   defaultStartDate.setDate(defaultStartDate.getDate() - 30);
   const defaultEndDate = new Date();
-
   const [dataInicio, setDataInicio] = useState(defaultStartDate.toISOString().split('T')[0]);
   const [dataFim, setDataFim] = useState(defaultEndDate.toISOString().split('T')[0]);
   const [totalGames, setTotalGames] = useState(0);
 
-  // Efeito para buscar dados de filtros
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
@@ -70,17 +143,16 @@ const Dashboard = () => {
           axios.get('/api/mecanicas/'),
           axios.get('/api/temas/')
         ]);
-        setCategories(categoryResp.data); // A estrutura já está correta
-        setMechanics(mechanicResp.data); // A estrutura já está correta
-        setThemes(themeResp.data); // A estrutura já está correta
+        setCategories(categoryResp.data.map(item => ({ id_categoria: item.id_categoria, nm_categoria: item.nm_categoria })));
+        setMechanics(mechanicResp.data.map(item => ({ id_mecanica: item.id_mecanica, nm_mecanica: item.nm_mecanica })));
+        setThemes(themeResp.data.map(item => ({ id_tema: item.id_tema, nm_tema: item.nm_tema })));
       } catch (error) {
-        console.error('Erro ao buscar dados de filtros: ', error);
+        console.error('Error fetching filter data:', error);
       }
     };
     fetchFilterData();
   }, []);
 
-  // Efeito para buscar dados dos usuários
   useEffect(() => {
     const fetchUserData = async () => {
       if (dataInicio && dataFim) {
@@ -101,19 +173,16 @@ const Dashboard = () => {
             }]
           });
         } catch (error) {
-          console.error('Erro ao buscar dados de usuários: ', error);
+          console.error('Error fetching user data:', error);
         }
       }
     };
     fetchUserData();
   }, [dataInicio, dataFim]);
 
-  // Efeito para buscar dados dos jogos
   useEffect(() => {
     const fetchGamesData = async () => {
       const params = new URLSearchParams();
-
-      // Anexa os parâmetros utilizando nomes
       selectedCategories.forEach(category => category && params.append('categoria', category));
       selectedMechanics.forEach(mechanic => mechanic && params.append('mecanica', mechanic));
       selectedThemes.forEach(theme => theme && params.append('tema', theme));
@@ -122,42 +191,12 @@ const Dashboard = () => {
         const response = await axios.get(`/api/estatisticas/jogos/?${params.toString()}`);
         setTotalGames(response.data.total);
       } catch (error) {
-        console.error('Error fetching total games data:', error);
+        console.error('Error fetching games data:', error);
       }
     };
     fetchGamesData();
   }, [selectedCategories, selectedMechanics, selectedThemes]);
 
-  // Manipulador para mudanças no multiselect
-  const handleMultiSelectChange = (setter) => (event) => {
-    const selectedOptions = Array.from(event.target.selectedOptions).map(option => option.value);
-    setter(selectedOptions);
-  };
-
-  // Componente FilterMultiSelect
-  const FilterMultiSelect = ({ label, options, selectedValues, onChange, type }) => (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <select
-        multiple
-        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        value={selectedValues}
-        onChange={onChange}
-      >
-        {options.map((option) => {
-          const key = option[`id_${type}`]; // Usa o id como chave
-          const name = option[`nm_${type}`]; // Usa o nome conforme o tipo de filtro
-          return (
-            <option key={key} value={name}>
-              {name}
-            </option>
-          );
-        })}
-      </select>
-    </div>
-  );
-
-  // Opções de configuração do gráfico
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -198,28 +237,27 @@ const Dashboard = () => {
       <div className="section">
         <h2 className="text-xl font-bold mb-4">Jogos por Categoria, Mecânica e Tema</h2>
         <div className="filters flex flex-wrap gap-4 mb-5">
-          <FilterMultiSelect
-            label="Categoria"
-            options={categories}
-            selectedValues={selectedCategories}
-            onChange={handleMultiSelectChange(setSelectedCategories)}
-            type="categoria"
-          />
-          <FilterMultiSelect
-            label="Mecânica"
-            options={mechanics}
-            selectedValues={selectedMechanics}
-            onChange={handleMultiSelectChange(setSelectedMechanics)}
-            type="mecanica"
-          />
-          <FilterMultiSelect
-            label="Tema"
-            options={themes}
-            selectedValues={selectedThemes}
-            onChange={handleMultiSelectChange(setSelectedThemes)}
-            type="tema"
-          />
-
+        <FilterMultiSelect
+          label="Categoria"
+          options={categories}
+          selectedValues={selectedCategories}
+          onChange={setSelectedCategories} // Direct use of setter
+          type="categoria"
+        />
+        <FilterMultiSelect
+          label="Mecânica"
+          options={mechanics}
+          selectedValues={selectedMechanics}
+          onChange={setSelectedMechanics} // Direct use of setter
+          type="mecanica"
+        />
+        <FilterMultiSelect
+          label="Tema"
+          options={themes}
+          selectedValues={selectedThemes}
+          onChange={setSelectedThemes} // Direct use of setter
+          type="tema"
+        />
         </div>
         <div className="card h-64">
           <Bar
