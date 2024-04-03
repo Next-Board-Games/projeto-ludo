@@ -116,27 +116,27 @@ class MecanicaViewSet(viewsets.ModelViewSet):
     queryset = Mecanica.objects.all()
     serializer_class = MecanicaSerializer
     # IsAdminUser restringe este ViewSet a administradores
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
 class TemaViewSet(viewsets.ModelViewSet):
     queryset = Tema.objects.all()
     serializer_class = TemaSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
 class ProfissionalViewSet(viewsets.ModelViewSet):
     queryset = Profissional.objects.all()
     serializer_class = ProfissionalSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
 class JogoViewSet(viewsets.ModelViewSet):
     queryset = Jogo.objects.all()
     serializer_class = JogoSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
 # Para ViewSets sem um queryset fixo, definimos o método get_queryset e usamos basename no registro
 class ColecaoUsuarioViewSet(viewsets.ModelViewSet):
