@@ -133,10 +133,22 @@ class ProfissionalViewSet(viewsets.ModelViewSet):
     serializer_class = ProfissionalSerializer
     permission_classes = [AllowAny]
 
-class JogoViewSet(viewsets.ModelViewSet):
-    queryset = Jogo.objects.all()
-    serializer_class = JogoSerializer
-    permission_classes = [AllowAny]
+# class JogoViewSet(viewsets.ModelViewSet):
+#     queryset = Jogo.objects.all()
+#     serializer_class = JogoSerializer
+#     pagination_class = JogoPagination
+#     permission_classes = [AllowAny]
+
+#     def get_queryset(self):
+#         queryset = super().get_queryset()
+#         nome = self.request.query_params.get('nome', None)
+        
+#         # Filtra a queryset por nome, se um nome foi fornecido
+#         if nome:
+#             queryset = queryset.filter(nm_jogo__icontains=nome)
+        
+#         return queryset
+
 
 # Para ViewSets sem um queryset fixo, definimos o método get_queryset e usamos basename no registro
 class ColecaoUsuarioViewSet(viewsets.ModelViewSet):
@@ -217,6 +229,17 @@ class JogoViewSet(viewsets.ModelViewSet):
     queryset = Jogo.objects.all()
     serializer_class = JogoSerializer
     pagination_class = JogoPagination
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        nome = self.request.query_params.get('nome', None)
+        
+        # Filtra a queryset por nome, se um nome foi fornecido
+        if nome:
+            queryset = queryset.filter(nm_jogo__icontains=nome)
+        
+        return queryset
 
 @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
@@ -291,6 +314,7 @@ def estatisticas_jogos(request):
     categoria = request.query_params.get('categoria')
     mecanica = request.query_params.get('mecanica')
     tema = request.query_params.get('tema')
+    nome = request.query_params.get('nome', None)  # Adiciona parâmetro para nome
 
     # Comece com todos os jogos
     jogos = Jogo.objects.all()
@@ -302,6 +326,8 @@ def estatisticas_jogos(request):
         jogos = jogos.filter(mecanicas__nm_mecanica=mecanica)
     if tema:
         jogos = jogos.filter(temas__nm_tema=tema)
+    if nome:
+        jogos = jogos.filter(nm_jogo__icontains=nome)  # Filtra jogos por nome
 
     # Aqui, você irá simplesmente contar o total de jogos após aplicar os filtros
     total_jogos = jogos.count()
@@ -310,5 +336,5 @@ def estatisticas_jogos(request):
     resposta = {
         "total": total_jogos
     }
-
+ 
     return Response(resposta)

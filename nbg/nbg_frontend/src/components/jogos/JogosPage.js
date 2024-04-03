@@ -7,6 +7,7 @@ const JogosPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
+    const [lastSearchTerm, setLastSearchTerm] = useState('');
 
     useEffect(() => {
         const fetchJogos = async () => {
@@ -23,12 +24,18 @@ const JogosPage = () => {
         };
     
         // Se está começando uma nova pesquisa, resetar currentPage para 1.
-        if (searchTerm && currentPage !== 1) {
-            setCurrentPage(1);
+        if (searchTerm !== lastSearchTerm) {
+            setLastSearchTerm(searchTerm); // Atualiza o último termo de pesquisa
+            if (currentPage !== 1) {
+                setCurrentPage(1); // Reseta a página apenas se o termo de pesquisa mudar
+            } else {
+                fetchJogos(); // Se já está na página 1, apenas realiza a busca
+            }
         } else {
-            fetchJogos();
+            fetchJogos(); // Realiza a busca se não for uma nova pesquisa
         }
-    }, [searchTerm, currentPage]);
+    // Adicione lastSearchTerm à lista de dependências aqui
+    }, [searchTerm, currentPage, lastSearchTerm]);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
